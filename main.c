@@ -5,6 +5,18 @@
 #include "freertos/task.h"
 #include "freertos/timers.h"
 
+#include <stdlib.h>
+#include "sys/alt_irq.h"
+#include "system.h"
+#include "io.h"
+#include "altera_up_avalon_video_character_buffer_with_dma.h"
+#include "altera_up_avalon_video_pixel_buffer_dma.h"
+#include <stddef.h>
+#include <string.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 // Constants and hardware definitions
 #define THRESHOLD_FREQ 50 // Set your threshold frequency
 #define THRESHOLD_ROC 5 // Set your threshold rate of change of frequency
@@ -24,8 +36,7 @@ int relay_state = 0;
 int timing_meas[5] = {0};
 char measureBuffer[50];
 
-float threshold_freq;
-float threshold_roc;
+
 
 // Function prototypes
 void task1(void *pvParameters);
@@ -178,7 +189,7 @@ void task3(void *pvParameters) {
 	drawStatus();
 	
 	// Print threshold value
-	drawThresholds(threshold_freq, threshold_roc);
+	drawThresholds(THRESHOLD_FREQ, THRESHOLD_ROC);
 	
 	
 	Line freq_line, roc_line;
