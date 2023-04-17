@@ -86,7 +86,7 @@ void task1(void *pvParameters) {
     float measured_inst_freq;
     float measured_roc_freq;
 
-    while(1) {
+    while (1) {
         printf("Task 1 - Frequency measurement: \n");
         // Measure inst_freq using appropriate sensors or methods
         measured_inst_freq = IORD(FREQUENCY_ANALYSER_BASE, 0);
@@ -95,12 +95,16 @@ void task1(void *pvParameters) {
         // Calculate rate of change of frequency in Hz/s
         curr_time = xTaskGetTickCount() * portTICK_PERIOD_MS / 1000.0; // Convert ms to s
         curr_freq = measured_inst_freq;
-        measured_roc_freq = (curr_freq - prev_freq) / (curr_time - prev_time);
+        if (curr_time != prev_time) { // Check if the time interval is not zero
+            measured_roc_freq = (curr_freq - prev_freq) / (curr_time - prev_time);
+        } else {
+            measured_roc_freq = 0; // Set rate of change to 0 if time interval is zero
+        }
         prev_freq = curr_freq;
         prev_time = curr_time;
 
         printf("Task 1 - Rate of frequency change: \n");
-        printf("%f Hz/s\n", (double)measured_roc_freq);
+        printf("%f Hz\n", (double)measured_roc_freq);
 
         // Update shared resources
         xSemaphoreTake(xMutex, portMAX_DELAY);
