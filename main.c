@@ -184,26 +184,27 @@ void task3(void *pvParameters) {
 	alt_up_char_buffer_string(char_buf, "-30", 9, 34);
 	alt_up_char_buffer_string(char_buf, "-60", 9, 36);
 	
-	// Print text about status
-	
-	drawStatus();
+
 	
 
-	// Print threshold value
-	sprintf(measureBuffer, "Frequency Threshold value:  %05.2f Hz", THRESHOLD_FREQ);
-	alt_up_char_buffer_string(char_buf, measureBuffer, 44, 40);
-	sprintf(measureBuffer, "ROC Threshold value : %05.2f Hz/s", THRESHOLD_ROC);
-	alt_up_char_buffer_string(char_buf, measureBuffer, 44, 42);
-	
 	
 	Line freq_line, roc_line;
 
     while(1) {
         // Read shared variables
         // ...
+		// Print threshold value
+		sprintf(measureBuffer, "Frequency Threshold value:  %05.2f Hz", THRESHOLD_FREQ);
+		alt_up_char_buffer_string(char_buf, measureBuffer, 44, 40);
+		sprintf(measureBuffer, "ROC Threshold value : %05.2f Hz/s", THRESHOLD_ROC);
+		alt_up_char_buffer_string(char_buf, measureBuffer, 44, 42);
 
+		// Print text about status
 
 		// clear the old value and graph
+		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 101, 0, 639, 199, 0, 0);
+		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 101, 201, 639, 299, 0, 0);
+		
         // Update VGA display with frequency relay information
         // ...
 
@@ -213,10 +214,6 @@ void task3(void *pvParameters) {
 }
 
 
-void drawStatus(){
-	
-	
-}
 
 
 void ISR1(void *context, alt_u32 id) {
