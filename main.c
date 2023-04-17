@@ -188,8 +188,12 @@ void task3(void *pvParameters) {
 	
 	drawStatus();
 	
+
 	// Print threshold value
-	drawThresholds(THRESHOLD_FREQ, THRESHOLD_ROC);
+	sprintf(measureBuffer, "Frequency Threshold value:  %05.2f Hz", THRESHOLD_FREQ);
+	alt_up_char_buffer_string(char_buf, measureBuffer, 44, 40);
+	sprintf(measureBuffer, "ROC Threshold value : %05.2f Hz/s", THRESHOLD_ROC);
+	alt_up_char_buffer_string(char_buf, measureBuffer, 44, 42);
 	
 	
 	Line freq_line, roc_line;
@@ -208,13 +212,6 @@ void task3(void *pvParameters) {
     }
 }
 
-void drawThresholds(float frequency_val, float roc_val){
-	// Print threshold value
-	sprintf(measureBuffer, "Frequency Threshold value:  %05.2f Hz", frequency_val);
-	alt_up_char_buffer_string(char_buf, measureBuffer, 44, 40);
-	sprintf(measureBuffer, "ROC Threshold value : %05.2f Hz/s", roc_val);
-	alt_up_char_buffer_string(char_buf, measureBuffer, 44, 42);
-}
 
 void drawStatus(){
 	
