@@ -45,9 +45,7 @@ void task3(void *pvParameters);
 void ISR1(void *context, alt_u32 id);
 void ISR2(TimerHandle_t xTimer);
 
-// local function
-void drawThresholds(float, float);
-void drawStatus();
+
 
 int main() {
     // Initialize hardware, peripherals, and shared resources
