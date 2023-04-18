@@ -20,6 +20,11 @@
 // Constants and hardware definitions
 #define THRESHOLD_FREQ 50 // Set your threshold frequency
 #define THRESHOLD_ROC 5 // Set your threshold rate of change of frequency
+#define MAX_LOADS 5 // maximum number of loads
+#define PRIORITY_HIGH 2
+#define PRIORITY_MEDIUM 1
+#define PRIORITY_LOW 0
+
 
 // Shared resources and definitions of semaphores
 SemaphoreHandle_t xMutex; // frequency
@@ -36,6 +41,10 @@ int relay_state = 0;
 int timing_meas[5] = {0};
 char measureBuffer[50];
 
+int load_priority[MAX_LOADS] = {PRIORITY_HIGH, PRIORITY_MEDIUM, PRIORITY_LOW, PRIORITY_LOW, PRIORITY_LOW};
+int load_status[MAX_LOADS] = {0};
+int relay_state = 0;
+int net_stability = 0;
 
 
 // Function prototypes
@@ -122,16 +131,36 @@ void task2(void *pvParameters) {
     while(1) {
 
         // Check network stability and relay state
+		
+		xSemaphoreTake(xMutex, portMAX_DELAY);
+        int net_stability_local = net_stability;
+        int relay_state_local = relay_state;
+        xSemaphoreGive(xMutex);
         // ...
-//		xSemaphoreTake(xMutex, portMAX_DELAY);
-//		xSemaphoreTake(system_status, portMAX_DELAY);
+
 
 
         // Manage loads based on network stability and relay state
         // ...
+		for (int i = 0; i < MAX_LOADS; i++) {
+            if (load_priority[i] == PRIORITY_HIGH && net_stability_local == 0) {
+                load_status[i] = 0; // shed high priority load if network is unstable
+            } else if (load_priority[i] == PRIORITY_LOW && relay_state_local == 0) {
+                load_status[i] = 0; // shed low priority load if relay is off
+            } else {
+                load_status[i] = 1; // reconnect load if conditions are met
+            }
+        }
 
         // Update LED states according to load status and relay state
-        // ...
+        for (int i = 0; i < MAX_LOADS; i++) {
+            // Set LED state according to load status
+            if (load_status[i] == 1) {
+                IOWR_ALTERA_AVALON_PIO_DATA(LED_BASE, (1 << i));
+            } else {
+                IOWR_ALTERA_AVALON_PIO_DATA(LED_BASE, ~(1 << i));
+            }
+        }
 
         // Sleep for a while (adjust the delay as needed)
         vTaskDelay(pdMS_TO_TICKS(100));
@@ -196,9 +225,9 @@ void task3(void *pvParameters) {
         // Read shared variables
         // ...
 		// Print threshold value
-		sprintf(measureBuffer, "Frequency Threshold value:  %05.2f Hz", THRESHOLD_FREQ);
+		sprintf(measureBuffer, "Frequency Threshold value:  %05.2f Hz", (double)THRESHOLD_FREQ);
 		alt_up_char_buffer_string(char_buf, measureBuffer, 44, 40);
-		sprintf(measureBuffer, "ROC Threshold value : %05.2f Hz/s", THRESHOLD_ROC);
+		sprintf(measureBuffer, "ROC Threshold value : %05.2f Hz/s", (double)THRESHOLD_ROC);
 		alt_up_char_buffer_string(char_buf, measureBuffer, 44, 42);
 
 		// Print text about status
