@@ -161,6 +161,9 @@ void task2(void *pvParameters) {
                 IOWR_ALTERA_AVALON_PIO_DATA(LED_BASE, ~(1 << i));
             }
         }
+		
+		IOWR_ALTERA_AVALON_PIO_DATA(RED_LED_BASE, RED_LED);
+    	IOWR_ALTERA_AVALON_PIO_DATA(GREEN_LED_BASE, GREEN_LED);
 
         // Sleep for a while (adjust the delay as needed)
         vTaskDelay(pdMS_TO_TICKS(100));
@@ -231,7 +234,15 @@ void task3(void *pvParameters) {
 		alt_up_char_buffer_string(char_buf, measureBuffer, 44, 42);
 
 		// Print text about status
-
+    	alt_up_char_buffer_string(char_buf, "System status", 44, 48);
+    	if(1) {
+    		alt_up_char_buffer_string(char_buf, "Stable", 44, 50);
+    		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 352, 365, 362, 375, 0x3ff, 0); //Green
+    	}
+    	else {
+    		alt_up_char_buffer_string(char_buf, "Unstable", 44, 50);
+    		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 352, 365, 362, 375, ((0x3ff << 20) + (0x3ff << 10) + (0x3ff)), 0); //Green
+    	}
 		// clear the old value and graph
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 101, 0, 639, 199, 0, 0);
 		alt_up_pixel_buffer_dma_draw_box(pixel_buffer, 101, 201, 639, 299, 0, 0);
