@@ -24,12 +24,25 @@
 #define PRIORITY_HIGH 2
 #define PRIORITY_MEDIUM 1
 #define PRIORITY_LOW 0
+#define MIN_FREQ 45 // minimum frequency for drawing graph
 
 
 // Shared resources and definitions of semaphores
 SemaphoreHandle_t xMutex; // frequency
 SemaphoreHandle_t system_status;
 
+// definition for frequency plot(VGA task)
+#define FREQPLT_ORI_X 101 //x axis pixel position at the plot origin
+#define FREQPLT_GRID_SIZE_X 5 //pixel separation in the x axis between two data points
+#define FREQPLT_ORI_Y 199.0 //y axis pixel position at the plot origin
+#define FREQPLT_FREQ_RES 20.0 //number of pixels per Hz (y axis scale)
+
+#define ROCPLT_ORI_X 101
+#define ROCPLT_GRID_SIZE_X 5
+#define ROCPLT_ORI_Y 259.0
+#define ROCPLT_ROC_RES 0.5
+
+#define FREQ_ARRAY 100
 
 
 // global variable
@@ -228,6 +241,19 @@ void task3(void *pvParameters) {
         // Read shared variables
         // ...
 		// Print threshold value
+		double f[100], roc[100]
+		//RoC = (f[i] - f[i-1]) * 2 * f[i] * f[i-1] / (f[i] + f[i-1])
+		
+		if (i==0) {
+			roc[0] = (f[0]-f[99]) * 2.0 * f[0] * f[99] / (f[0]+f[99]);
+		}
+		else {
+			roc[i] = (f[i] - f[i-1]) * 2.0 * f[i] * f[i-1] / (f[i] + f[i-1])
+		}
+			
+			
+		
+		
 		sprintf(measureBuffer, "Frequency Threshold value:  %05.2f Hz", (double)THRESHOLD_FREQ);
 		alt_up_char_buffer_string(char_buf, measureBuffer, 44, 40);
 		sprintf(measureBuffer, "ROC Threshold value : %05.2f Hz/s", (double)THRESHOLD_ROC);
@@ -261,6 +287,7 @@ void task3(void *pvParameters) {
 void ISR1(void *context, alt_u32 id) {
     // Handle user input (slide switches and push button)
     // ...
+	int switchState = IORD_ALTERA_AVALON_PIO_DATA(SLIDE_SWITCH_BASE);
 
     // Update shared resources (load_status and relay_state)
     xSemaphoreTakeFromISR(xMutex, 0);
