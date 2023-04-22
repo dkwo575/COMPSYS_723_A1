@@ -67,6 +67,12 @@ void task3(void *pvParameters);
 void ISR1(void *context, alt_u32 id);
 void ISR2(TimerHandle_t xTimer);
 
+typedef struct{
+	unsigned int x1;
+	unsigned int y1;
+	unsigned int x2;
+	unsigned int y2;
+}Line;
 
 
 int main() {
@@ -181,12 +187,7 @@ void task2(void *pvParameters) {
         vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
-typedef struct{
-	unsigned int x1;
-	unsigned int y1;
-	unsigned int x2;
-	unsigned int y2;
-}Line;
+
 
 void task3(void *pvParameters) {
 	// display shared variable on VGA display
@@ -234,7 +235,7 @@ void task3(void *pvParameters) {
 	
 
 	
-	Line freq_line, roc_line;
+	Line f_draw, roc_draw;
 
     while(1) {
         // Read shared variables
@@ -249,8 +250,38 @@ void task3(void *pvParameters) {
 		else {
 			roc[i] = (f[i] - f[i-1]) * 2.0 * f[i] * f[i-1] / (f[i] + f[i-1])
 		}
+		
+		if (dfreq[i] > 100.0){
+			dfreq[i] = 100.0;
+		}
+		
+		i =	++i%100; // Point to the next data (oldest) to be overwritten
+			//i here points to the oldest data, j loops through all the data to be drawn on VGA
 			
-			
+		for(int j=0;j<99;++j){ 
+			if (((int)(f[(roc+j)%100]) > MIN_FREQ) && ((int)(f[(roc+j+1)%100]) > MIN_FREQ)){
+				//Calculate coordinates of the two data points to draw a line in between
+				
+				//Draw frequency 
+				f_draw.x1 = FREQPLT_ORI_X + FREQPLT_GRID_SIZE_X * j;
+				f_draw.y1 = (int)(FREQPLT_ORI_Y - FREQPLT_FREQ_RES * (f[(roc+j)%100] - MIN_FREQ));
+
+				f_draw.x2 = FREQPLT_ORI_X + FREQPLT_GRID_SIZE_X * (j + 1);
+				f_draw.y2 = (int)(FREQPLT_ORI_Y - FREQPLT_FREQ_RES * (freq[(freqIndex+j+1)%100] - MIN_FREQ));
+
+
+				//Draw roc frequency
+				roc_draw.x1 = ROCPLT_ORI_X + ROCPLT_GRID_SIZE_X * j;
+				roc_draw.y1 = (int)(ROCPLT_ORI_Y - ROCPLT_ROC_RES * dfreq[(freqIndex+j)%100]);
+
+				roc_draw.x2 = ROCPLT_ORI_X + ROCPLT_GRID_SIZE_X * (j + 1);
+				roc_draw.y2 = (int)(ROCPLT_ORI_Y - ROCPLT_ROC_RES * dfreq[(freqIndex+j+1)%100]);
+
+
+
+				//Draw Line
+				alt_up_pixel_buffer_dma_draw_line(pixel_buf, f_draw.x1, f_draw.y1, f_draw.x2, f_draw.y2, 0x3ff << 0, 0);
+				alt_up_pixel_buffer_dma_draw_line(pixel_buf, roc_draw.x1, roc_draw.y1, roc_draw.x2, roc_draw.y2, 0x3ff << 0, 0);
 		
 		
 		sprintf(measureBuffer, "Frequency Threshold value:  %05.2f Hz", (double)THRESHOLD_FREQ);
