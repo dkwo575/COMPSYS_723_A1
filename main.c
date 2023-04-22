@@ -97,8 +97,7 @@ int main() {
 }
 
 void task1(void *pvParameters) {
-
-	// Variables for frequency measurement and rate of change calculation
+    // Variables for frequency measurement and rate of change calculation
     float prev_freq = 0;
     float curr_freq = 0;
     float prev_time = 0;
